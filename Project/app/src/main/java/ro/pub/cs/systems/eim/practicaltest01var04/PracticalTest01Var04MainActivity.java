@@ -51,4 +51,32 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
             displayInformationTextView.setText(text);
         });
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString(Constants.STUDENT_NAME, studentNameEditText.getText().toString());
+        savedInstanceState.putString(Constants.GROUP, groupEditText.getText().toString());
+        savedInstanceState.putString(Constants.DISPLAY_INFORMATION, displayInformationTextView.getText().toString());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState.containsKey(Constants.STUDENT_NAME)) {
+            studentNameEditText.setText(savedInstanceState.getString(Constants.STUDENT_NAME));
+        } else {
+            studentNameEditText.setText("");
+        }
+        if (savedInstanceState.containsKey(Constants.GROUP)) {
+            groupEditText.setText(savedInstanceState.getString(Constants.GROUP));
+        } else {
+            groupEditText.setText("");
+        }
+        if (savedInstanceState.containsKey(Constants.DISPLAY_INFORMATION)) {
+            displayInformationTextView.setText(savedInstanceState.getString(Constants.DISPLAY_INFORMATION));
+        } else {
+            displayInformationTextView.setText("");
+        }
+    }
 }
