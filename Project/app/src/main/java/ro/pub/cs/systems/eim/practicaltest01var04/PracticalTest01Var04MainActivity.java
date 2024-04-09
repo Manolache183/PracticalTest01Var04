@@ -1,7 +1,11 @@
 package ro.pub.cs.systems.eim.practicaltest01var04;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -22,11 +26,26 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
 
     ActivityResultLauncher<Intent> activityResultLauncher;
 
+    private IntentFilter intentFilter = new IntentFilter();
+
+    boolean startedService = false;
+
+    private MessageBroadcastReceiver messageBroadcastReceiver = new MessageBroadcastReceiver();
+    private class MessageBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(Constants.BROADCAST_RECEIVER_TAG, intent.getStringExtra(Constants.BROADCAST_RECEIVER_EXTRA));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_practical_test01_var04_main);
 
+        for (String actionType : Constants.actionTypes) {
+            intentFilter.addAction(actionType);
+        }
         navigateToSecondaryActivityButton = findViewById(R.id.navigate_to_secondary_activity_button);
         displayInformationButton = findViewById(R.id.display_information_button);
         studentNameEditText = findViewById(R.id.student_name_edit_text);
@@ -55,6 +74,16 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
             }
 
             displayInformationTextView.setText(text);
+            // start service if both checkboxes ar completed and the service is not already started and the text is not empty
+            if (studentNameCheckBox.isChecked() && groupCheckBox.isChecked() && !startedService && !text.isEmpty()) {
+                Intent intent = new Intent(this, PracticalTest01Var04Service.class);
+                intent.putExtra(Constants.STUDENT_NAME, studentName);
+                intent.putExtra(Constants.GROUP, group);
+                intent.putExtra(Constants.DISPLAY_INFORMATION, text);
+                startedService = true;
+                getApplicationContext().startService(intent);
+            }
+
 
         });
 
@@ -99,5 +128,24 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
         } else {
             displayInformationTextView.setText("");
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        Intent intent = new Intent(this, PracticalTest01Var04Service.class);
+        stopService(intent);
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(messageBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(messageBroadcastReceiver);
+        super.onPause();
     }
 }
